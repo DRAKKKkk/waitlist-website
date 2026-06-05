@@ -3,6 +3,8 @@ import { platformOptions } from './platforms';
 import { companyOptions } from './companies'; 
 import { Turnstile } from '@marsidev/react-turnstile'; 
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function App() {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -145,7 +147,7 @@ export default function App() {
     setIsSubmitting(true); 
 
     try {
-      const response = await fetch('http://localhost:5000/api/join', {
+      const response = await fetch(`${API_URL}/api/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

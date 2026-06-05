@@ -1,1 +1,15 @@
 @import "tailwindcss";
+/* --- OVERRIDE BROWSER AUTOFILL STYLING --- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    /* Background color ko app ke dark theme se match kar rahe hain */
+    -webkit-box-shadow: 0 0 0 30px #121212 inset !important;
+    
+    /* Text color ko white kar rahe hain */
+    -webkit-text-fill-color: white !important;
+    
+    /* Cursor/Caret color ko white kar rahe hain */
+    caret-color: white !important;
+}
