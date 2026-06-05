@@ -4,12 +4,14 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-    /* Background color ko app ke dark theme se match kar rahe hain */
+    /* Background color override */
     -webkit-box-shadow: 0 0 0 30px #121212 inset !important;
     
-    /* Text color ko white kar rahe hain */
+    /* Text color overrides */
     -webkit-text-fill-color: white !important;
-    
-    /* Cursor/Caret color ko white kar rahe hain */
+    color: white !important;
     caret-color: white !important;
+    
+    /* [ THE MAGIC HACK ] - Prevents color flashing */
+    transition: background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s !important;
 }
