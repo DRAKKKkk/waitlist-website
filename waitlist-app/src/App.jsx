@@ -288,7 +288,7 @@ export default function App() {
               disabled={isSubmitting}
               className={`w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base focus:ring-0 focus:outline-none focus:border-[#00ffcc] transition-colors rounded-none appearance-none cursor-pointer disabled:opacity-50 ${formData.profession === '' ? 'text-gray-500' : 'text-white'}`}
             >
-              <option value="" disabled className="text-gray-500 bg-[#121212]">[ SELECT_ROLE ]</option>
+              <option value="" disabled className="text-gray-500 bg-[#121212] disabled hidden">[ SELECT_ROLE ]</option>
               <option value="Student" className="text-gray-400 bg-[#121212]">Student</option>
               <option value="Freelancer" className="text-gray-400 bg-[#121212]">Freelancer</option>
               <option value="Working Professional" className="text-gray-400 bg-[#121212]">Working Professional</option>
