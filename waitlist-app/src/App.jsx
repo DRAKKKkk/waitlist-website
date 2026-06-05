@@ -25,10 +25,14 @@ export default function App() {
   const [hasJoined, setHasJoined] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState(null);
 
-  // > NEW: Referral States
+  // Referral States
   const [referredBy, setReferredBy] = useState(null);
   const [myRefCode, setMyRefCode] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Profession Dropdown States
+  const [isProfessionOpen, setIsProfessionOpen] = useState(false);
+  const professionOptions = ['Student', 'Freelancer', 'Working Professional', 'Other'];
 
   useEffect(() => {
     // 1. Check if user already joined
@@ -76,11 +80,9 @@ export default function App() {
   const handleCompanyKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault(); 
-      // Agar suggestions list mein kuch hai, toh pehla option select karo
       if (isCompanyOpen && filteredCompanies.length > 0) {
         addCompany(filteredCompanies[0]);
       } else {
-        // Warna jo type kiya hai wahi select kar lo
         addCompany(companyInput);
       }
     }
@@ -107,11 +109,9 @@ export default function App() {
   const handlePlatformKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault(); 
-      // Agar suggestions list mein kuch hai, toh pehla option select karo
       if (isPlatformOpen && filteredPlatforms.length > 0) {
         addPlatform(filteredPlatforms[0]);
       } else {
-        // Warna jo type kiya hai wahi select kar lo
         addPlatform(platformInput);
       }
     }
@@ -121,7 +121,6 @@ export default function App() {
     setSelectedPlatforms(selectedPlatforms.filter(p => p !== platformName));
   };
 
-  // > NEW: Copy to Clipboard Function
   const copyToClipboard = () => {
     const link = `${window.location.origin}?ref=${myRefCode}`;
     navigator.clipboard.writeText(link);
@@ -158,7 +157,7 @@ export default function App() {
           company: formData.company,
           platforms: selectedPlatforms,
           turnstileToken: turnstileToken,
-          referredBy: referredBy // > NEW: Sending refer code to backend
+          referredBy: referredBy
         })
       });
 
@@ -166,7 +165,6 @@ export default function App() {
 
       if (response.ok) {
         localStorage.setItem('intelli_joined', 'true');
-        // > NEW: Save my referral code locally
         localStorage.setItem('intelli_ref_code', data.user.referral_code);
         setMyRefCode(data.user.referral_code);
         setHasJoined(true);
@@ -183,9 +181,11 @@ export default function App() {
     }
   };
 
+  // > UPDATED: Added setIsProfessionOpen(false) to close dropdown when clicking outside
   const closeAllMenus = () => {
     setIsPlatformOpen(false);
     setIsCompanyOpen(false);
+    setIsProfessionOpen(false); 
   };
 
   // ==========================================
@@ -234,7 +234,7 @@ export default function App() {
   }
 
   // ==========================================
-  // MAIN FORM CODE (REMAINS EXACTLY THE SAME)
+  // MAIN FORM CODE
   // ==========================================
   return (
     <div className="min-h-screen bg-[#121212] flex flex-col items-center py-12 px-6 font-mono text-gray-300 selection:bg-[#00ffcc] selection:text-black" onClick={closeAllMenus}>
@@ -278,26 +278,46 @@ export default function App() {
               className="w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base text-white placeholder-gray-600 focus:ring-0 focus:outline-none focus:border-[#00ffcc] transition-colors rounded-none appearance-none disabled:opacity-50" />
           </div>
 
+          {/* > UPDATED: REPLACED <SELECT> WITH CUSTOM DROPDOWN UI */}
           <div className="flex flex-col relative">
             <label className="text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2">Profession *</label>
-            <select 
-              name="profession" 
-              value={formData.profession} 
-              onChange={handleInputChange} 
-              required
-              disabled={isSubmitting}
-              className={`w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base focus:ring-0 focus:outline-none focus:border-[#00ffcc] transition-colors rounded-none appearance-none cursor-pointer disabled:opacity-50 ${formData.profession === '' ? 'text-gray-500' : 'text-white'}`}
+            
+            <div 
+              onClick={() => {
+                if (!isSubmitting) {
+                  setIsProfessionOpen(!isProfessionOpen);
+                  setIsCompanyOpen(false); // Close other menus
+                  setIsPlatformOpen(false);
+                }
+              }}
+              className={`w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base focus:ring-0 focus:outline-none transition-colors rounded-none flex justify-between items-center ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#00ffcc]/50'}`}
             >
-              <option value="" disabled className="text-gray-500 bg-[#121212] disabled hidden">[ SELECT_ROLE ]</option>
-              <option value="Student" className="text-gray-400 bg-[#121212]">Student</option>
-              <option value="Freelancer" className="text-gray-400 bg-[#121212]">Freelancer</option>
-              <option value="Working Professional" className="text-gray-400 bg-[#121212]">Working Professional</option>
-              <option value="Other" className="text-gray-400 bg-[#121212]">Other</option>
-            </select>
-            <span className="absolute right-0 bottom-3 text-gray-500 pointer-events-none text-xs">
-              [ ▼ ]
-            </span>
+              <span className={formData.profession ? 'text-white' : 'text-gray-500'}>
+                {formData.profession || '[ SELECT_ROLE ]'}
+              </span>
+              <span className="text-gray-500 text-xs pointer-events-none">
+                [ ▼ ]
+              </span>
+            </div>
+
+            {isProfessionOpen && !isSubmitting && (
+              <ul className="absolute top-full mt-2 left-0 w-full bg-[#121212] border border-solid border-[#00ffcc]/30 max-h-48 overflow-y-auto z-30 shadow-[0_0_15px_rgba(0,255,204,0.1)] rounded-none scrollbar-thin">
+                {professionOptions.map((role) => (
+                  <li
+                    key={role}
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, profession: role }));
+                      setIsProfessionOpen(false);
+                    }}
+                    className="px-4 py-3 text-sm text-gray-400 hover:bg-[#00ffcc]/10 hover:text-[#00ffcc] cursor-pointer transition-colors border-b border-solid border-gray-800 last:border-0"
+                  >
+                    + {role}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
+          {/* > END OF DROPDOWN UPDATE */}
 
           {formData.profession === 'Working Professional' && (
             <div className="flex flex-col relative animate-fade-in">
@@ -328,6 +348,7 @@ export default function App() {
                       onChange={(e) => {
                         setCompanyInput(e.target.value);
                         setIsCompanyOpen(true);
+                        setIsProfessionOpen(false); // Close other menus
                       }}
                       onFocus={() => setIsCompanyOpen(true)}
                       onClick={() => setIsCompanyOpen(true)}
@@ -401,6 +422,7 @@ export default function App() {
                 onChange={(e) => {
                   setPlatformInput(e.target.value);
                   setIsPlatformOpen(true);
+                  setIsProfessionOpen(false); // Close other menus
                 }}
                 onFocus={() => setIsPlatformOpen(true)}
                 onClick={() => setIsPlatformOpen(true)}
