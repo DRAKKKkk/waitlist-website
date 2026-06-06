@@ -5,7 +5,8 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
     /* Background color override */
-    -webkit-box-shadow: 0 0 0 30px #121212 inset !important;
+    /* index.css ke andar */
+    -webkit-box-shadow: 0 0 0 30px #09090b inset !important;
     
     /* Text color overrides */
     -webkit-text-fill-color: white !important;

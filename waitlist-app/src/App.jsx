@@ -35,13 +35,11 @@ export default function App() {
   const professionOptions = ['Student', 'Freelancer', 'Working Professional', 'Other'];
 
   useEffect(() => {
-    // 1. Check if user already joined
     if (localStorage.getItem('intelli_joined') === 'true') {
       setHasJoined(true);
       setMyRefCode(localStorage.getItem('intelli_ref_code') || '');
     }
 
-    // 2. Scan URL for friend's referral code (e.g., ?ref=tejas123)
     const urlParams = new URLSearchParams(window.location.search);
     const refParam = urlParams.get('ref');
     if (refParam) {
@@ -96,7 +94,7 @@ export default function App() {
     const trimmedName = platformName.trim();
     if (!trimmedName) return;
     if (selectedPlatforms.length >= 10) {
-      alert('[ SYSTEM_MSG ]: Maximum limit reached.');
+      alert('Maximum limit reached.');
       return;
     }
     if (!selectedPlatforms.includes(trimmedName)) {
@@ -131,15 +129,15 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.firstName || !formData.email || !formData.profession || selectedPlatforms.length === 0) {
-      alert('[ SYSTEM_ERROR ]: Please fill all required fields and select at least one platform.');
+      alert('Please fill all required fields and select at least one platform.');
       return;
     }
     if (formData.profession === 'Working Professional' && !formData.company) {
-      alert('[ SYSTEM_ERROR ]: Please input your company name.');
+      alert('Please input your company name.');
       return;
     }
     if (!turnstileToken) {
-      alert('[ SECURITY_ALERT ]: Anti-bot verification is still loading or failed. Please wait a second and try again.');
+      alert('Anti-bot verification is still loading or failed. Please wait a second and try again.');
       return;
     }
 
@@ -169,337 +167,353 @@ export default function App() {
         setMyRefCode(data.user.referral_code);
         setHasJoined(true);
       } else if (response.status === 409) {
-        alert('[ SYSTEM_WARNING ]: This email is already registered in our database.');
+        alert('This email is already registered in our database.');
       } else {
-        alert(`[ SYSTEM_WARNING ]: ${data.error}`);
+        alert(`Warning: ${data.error}`);
       }
     } catch (error) {
       console.error("Connection failed", error);
-      alert('[ SYSTEM_CRITICAL ]: Server unreachable. Try again later.');
+      alert('Server unreachable. Try again later.');
     } finally {
       setIsSubmitting(false); 
     }
   };
 
-  // > UPDATED: Added setIsProfessionOpen(false) to close dropdown when clicking outside
   const closeAllMenus = () => {
     setIsPlatformOpen(false);
     setIsCompanyOpen(false);
     setIsProfessionOpen(false); 
   };
 
+  const ChevronIcon = () => (
+    <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+
+  const CloseIcon = () => (
+    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+
   // ==========================================
-  // UPDATED SUCCESS SCREEN WITH REFERRAL LOOP
+  // UNIVERSAL-GLASS SUCCESS SCREEN
   // ==========================================
   if (hasJoined) {
     return (
-      <div className="min-h-screen bg-[#121212] flex flex-col items-center justify-center py-12 px-6 font-mono selection:bg-[#00ffcc] selection:text-black">
-        <div className="max-w-xl w-full text-center space-y-8 animate-fade-in border-t border-b border-gray-800 py-12">
-          
-          <div>
-            <h2 className="text-[#00ffcc] text-2xl md:text-3xl font-bold tracking-widest uppercase">
-              [ THANK_YOU ]
-            </h2>
-            <p className="text-gray-400 text-base md:text-lg leading-relaxed mt-4">
-              Thank you for adding your name. <br className="hidden md:block"/>
-              You are going to be one of the early users of <span className="text-white font-bold tracking-wide">IntelliGuide</span>.
-            </p>
-          </div>
+      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center py-12 px-6 font-sans text-zinc-100 selection:bg-blue-500/30">
+        {/* Background Glow Effect */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px]" />
+        </div>
 
-          <div className="bg-black/50 p-6 border border-gray-800 mt-8 space-y-4">
-            
-            <p className="text-sm text-gray-300">
-              Share this unique link with 3 friends.
+        <main className="max-w-xl w-full flex flex-col items-center bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.3)] p-10 z-10 relative text-center">
+          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-100">
+            You're on the list.
+          </h2>
+          <p className="text-zinc-400 text-base mt-4 leading-relaxed">
+            Thank you for securing your spot. You will be one of the first to experience <span className="text-zinc-100 font-medium">IntelliGuide</span>.
+          </p>
+
+          <div className="w-full bg-black/20 border border-white/10 rounded-xl p-6 mt-8">
+            <p className="text-sm font-medium text-zinc-300 mb-3">
+              Move up the queue. Share this link with friends:
             </p>
-            
-            <div className="flex items-center justify-between bg-[#1a1a1a] border border-[#00ffcc]/30 p-3 mt-4">
-              <code className="text-[#00ffcc] text-sm truncate mr-4">
+            <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-lg p-2">
+              <code className="text-blue-400 text-sm truncate pl-3 pr-4">
                 {window.location.origin}?ref={myRefCode}
               </code>
               <button 
                 onClick={copyToClipboard}
-                className="text-xs bg-[#00ffcc] text-black font-bold px-3 py-1.5 uppercase tracking-wider hover:bg-white transition-colors flex-shrink-0"
+                className="text-xs bg-white/10 hover:bg-white/20 text-zinc-100 font-medium px-4 py-2 rounded-md transition-all duration-200 flex-shrink-0"
               >
-                {copied ? 'COPIED!' : 'COPY'}
+                {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
           </div>
-
-          <p className="text-gray-600 text-xs mt-10 uppercase tracking-widest animate-pulse">
-            _ SYSTEM_STANDBY
-          </p>
-        </div>
+        </main>
       </div>
     );
   }
 
   // ==========================================
-  // MAIN FORM CODE
+  // UNIVERSAL-GLASS MAIN FORM
   // ==========================================
   return (
-    <div className="min-h-screen bg-[#121212] flex flex-col items-center py-12 px-6 font-mono text-gray-300 selection:bg-[#00ffcc] selection:text-black" onClick={closeAllMenus}>
+    <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans text-zinc-100 selection:bg-blue-500/30" onClick={closeAllMenus}>
       
-      <main className="max-w-3xl w-full flex flex-col items-center">
+      {/* Background Ambient Glow */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 flex justify-center items-center">
+        <div className="absolute top-0 w-full h-[500px] bg-blue-600/10 blur-[150px] rounded-[100%]" />
+      </div>
+
+      <div className="max-w-2xl w-full flex flex-col items-center z-10">
         
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tighter text-white mb-6 text-center leading-tight">
-          WE KNOW WHEN YOU'RE LOST.
-        </h1>
-        
-        <div className="text-sm md:text-base text-gray-400 mb-12 text-center leading-relaxed space-y-4 max-w-xl">
-          <p>
-            What if your software knew you were confused before you even typed a single question? <span className="text-[#00ffcc] font-bold tracking-wide">IntelliGuide</span> is an invisible layer that detects friction and turns hesitation into instant clarity—precisely on the UI element where you need it. 
-          </p>
-          <p className="font-semibold text-gray-300">
-            No searching. No context-switching.
-          </p>
-          <p className="text-xs text-gray-500 uppercase tracking-widest pt-3">
-            [ The end of frustrating interfaces is imminent ]
+        <div className="text-center mb-10 max-w-xl">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-100 mb-5">
+            We know when you're lost.
+          </h1>
+          <p className="text-base text-zinc-400 leading-relaxed">
+            What if your software knew you were confused before you even typed a single question? IntelliGuide is an invisible layer that turns hesitation into instant clarity.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="w-full max-w-xl space-y-8" onClick={(e) => e.stopPropagation()}>
+        {/* Glassmorphism Card */}
+        <main className="w-full bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.3)] p-6 sm:p-10 relative">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="flex flex-col">
-              <label className="text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2">First Name *</label>
-              <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} required disabled={isSubmitting}
-                className="w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base text-white placeholder-gray-600 focus:ring-0 focus:outline-none focus:border-[#00ffcc] transition-colors rounded-none appearance-none disabled:opacity-50" />
-            </div>
-            <div className="flex flex-col">
-              <label className="text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2">Last Name</label>
-              <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} disabled={isSubmitting}
-                className="w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base text-white placeholder-gray-600 focus:ring-0 focus:outline-none focus:border-[#00ffcc] transition-colors rounded-none appearance-none disabled:opacity-50" />
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            <label className="text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2">Email Address *</label>
-            <input type="email" name="email" value={formData.email} onChange={handleInputChange} required disabled={isSubmitting}
-              className="w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base text-white placeholder-gray-600 focus:ring-0 focus:outline-none focus:border-[#00ffcc] transition-colors rounded-none appearance-none disabled:opacity-50" />
-          </div>
-
-          {/* > UPDATED: REPLACED <SELECT> WITH CUSTOM DROPDOWN UI */}
-          <div className="flex flex-col relative">
-            <label className="text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2">Profession *</label>
+          <form onSubmit={handleSubmit} className="w-full space-y-6" onClick={(e) => e.stopPropagation()}>
             
-            <div 
-              onClick={() => {
-                if (!isSubmitting) {
-                  setIsProfessionOpen(!isProfessionOpen);
-                  setIsCompanyOpen(false); // Close other menus
-                  setIsPlatformOpen(false);
-                }
-              }}
-              className={`w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base focus:ring-0 focus:outline-none transition-colors rounded-none flex justify-between items-center ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#00ffcc]/50'}`}
-            >
-              <span className={formData.profession ? 'text-white' : 'text-gray-500'}>
-                {formData.profession || '[ SELECT_ROLE ]'}
-              </span>
-              <span className="text-gray-500 text-xs pointer-events-none">
-                [ ▼ ]
-              </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="flex flex-col">
+                <label className="text-xs font-medium text-zinc-400 mb-2 ml-1">First Name <span className="text-blue-500">*</span></label>
+                <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} required disabled={isSubmitting}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all duration-200 disabled:opacity-50" 
+                  placeholder="Steve" />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-xs font-medium text-zinc-400 mb-2 ml-1">Last Name</label>
+                <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} disabled={isSubmitting}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all duration-200 disabled:opacity-50" 
+                  placeholder="Jobs" />
+              </div>
             </div>
 
-            {isProfessionOpen && !isSubmitting && (
-              <ul className="absolute top-full mt-2 left-0 w-full bg-[#121212] border border-solid border-[#00ffcc]/30 max-h-48 overflow-y-auto z-30 shadow-[0_0_15px_rgba(0,255,204,0.1)] rounded-none scrollbar-thin">
-                {professionOptions.map((role) => (
-                  <li
-                    key={role}
-                    onClick={() => {
-                      setFormData(prev => ({ ...prev, profession: role }));
-                      setIsProfessionOpen(false);
-                    }}
-                    className="px-4 py-3 text-sm text-gray-400 hover:bg-[#00ffcc]/10 hover:text-[#00ffcc] cursor-pointer transition-colors border-b border-solid border-gray-800 last:border-0"
-                  >
-                    + {role}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          {/* > END OF DROPDOWN UPDATE */}
+            <div className="flex flex-col">
+              <label className="text-xs font-medium text-zinc-400 mb-2 ml-1">Work Email <span className="text-blue-500">*</span></label>
+              <input type="email" name="email" value={formData.email} onChange={handleInputChange} required disabled={isSubmitting}
+                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all duration-200 disabled:opacity-50" 
+                placeholder="steve@apple.com" />
+            </div>
 
-          {formData.profession === 'Working Professional' && (
-            <div className="flex flex-col relative animate-fade-in">
-              <label className="text-xs md:text-sm text-[#00ffcc] uppercase tracking-widest mb-2">Company Name *</label>
+            {/* Custom Dropdown: Profession */}
+            <div className="flex flex-col relative">
+              <label className="text-xs font-medium text-zinc-400 mb-2 ml-1">Current Role <span className="text-blue-500">*</span></label>
               
-              {formData.company && (
-                <div className="flex flex-wrap gap-2 mt-1">
-                  <div className="flex items-center text-xs bg-black border border-solid border-[#00ffcc]/50 text-[#00ffcc] px-2 py-1">
-                    <span>&gt; {formData.company}</span>
-                    <button 
-                      type="button" 
-                      onClick={removeCompany}
-                      className="ml-2 text-[#00ffcc]/60 hover:text-red-500 transition-colors focus:outline-none"
+              <div 
+                onClick={() => {
+                  if (!isSubmitting) {
+                    setIsProfessionOpen(!isProfessionOpen);
+                    setIsCompanyOpen(false);
+                    setIsPlatformOpen(false);
+                  }
+                }}
+                className={`w-full bg-black/20 border ${isProfessionOpen ? 'border-blue-500 ring-1 ring-blue-500/50' : 'border-white/10'} rounded-lg px-4 py-3 text-sm flex justify-between items-center transition-all duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-black/30'}`}
+              >
+                <span className={formData.profession ? 'text-zinc-100' : 'text-zinc-500'}>
+                  {formData.profession || 'Select your profession...'}
+                </span>
+                <span className={`transform transition-transform duration-200 ${isProfessionOpen ? 'rotate-180' : ''}`}>
+                  <ChevronIcon />
+                </span>
+              </div>
+
+              {isProfessionOpen && !isSubmitting && (
+                <div className="absolute top-full mt-2 left-0 w-full bg-zinc-800/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden z-30 py-1">
+                  {professionOptions.map((role) => (
+                    <div
+                      key={role}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, profession: role }));
+                        setIsProfessionOpen(false);
+                      }}
+                      className="px-4 py-2.5 text-sm text-zinc-300 hover:bg-blue-600 hover:text-white cursor-pointer transition-colors"
                     >
-                      [x]
-                    </button>
-                  </div>
+                      {role}
+                    </div>
+                  ))}
                 </div>
               )}
+            </div>
 
-              {!formData.company && (
-                <>
-                  <div className="relative w-full mt-1">
+            {/* Conditional Company Input */}
+            {formData.profession === 'Working Professional' && (
+              <div className="flex flex-col relative animate-fade-in">
+                <label className="text-xs font-medium text-zinc-400 mb-2 ml-1">Company Name <span className="text-blue-500">*</span></label>
+                
+                {formData.company ? (
+                  <div className="flex items-center mt-1">
+                    <div className="flex items-center text-sm bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-md px-3 py-1.5 shadow-sm">
+                      <span className="font-medium">{formData.company}</span>
+                      <button 
+                        type="button" 
+                        onClick={removeCompany}
+                        className="ml-3 text-blue-400/60 hover:text-red-400 transition-colors focus:outline-none p-0.5 rounded-full hover:bg-red-400/10"
+                      >
+                        <CloseIcon />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative w-full">
                     <input 
                       type="text" 
-                      placeholder="Type your company & press Enter..."
+                      placeholder="Search or type company name..."
                       value={companyInput}
                       onChange={(e) => {
                         setCompanyInput(e.target.value);
                         setIsCompanyOpen(true);
-                        setIsProfessionOpen(false); // Close other menus
+                        setIsProfessionOpen(false);
                       }}
                       onFocus={() => setIsCompanyOpen(true)}
                       onClick={() => setIsCompanyOpen(true)}
                       onKeyDown={handleCompanyKeyDown}
                       disabled={isSubmitting}
                       autoComplete="off"
-                      className="w-full bg-transparent border-0 border-b border-solid border-[#00ffcc]/50 pb-2 text-base text-[#00ffcc] placeholder-[#00ffcc]/30 focus:ring-0 focus:outline-none focus:border-[#00ffcc] transition-colors rounded-none appearance-none pr-8 disabled:opacity-50" 
+                      className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all duration-200 disabled:opacity-50 pr-10" 
                     />
-                    <span className="absolute right-0 bottom-3 text-[#00ffcc]/50 pointer-events-none text-xs">
-                      [ ▼ ]
-                    </span>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <ChevronIcon />
+                    </div>
                   </div>
-                </>
-              )}
-              
-              {isCompanyOpen && !formData.company && (
-                <ul className="absolute top-full mt-2 left-0 w-full bg-[#121212] border border-solid border-[#00ffcc]/30 max-h-48 overflow-y-auto z-20 shadow-[0_0_15px_rgba(0,255,204,0.1)] rounded-none scrollbar-thin">
-                  {filteredCompanies.length > 0 ? (
-                    filteredCompanies.map((comp, idx) => (
-                      <li key={idx} onClick={() => addCompany(comp)}
-                        className="px-4 py-3 text-sm text-gray-400 hover:bg-[#00ffcc]/10 hover:text-[#00ffcc] cursor-pointer transition-colors border-b border-solid border-gray-800 last:border-0">
-                        + {comp}
-                      </li>
-                    ))
-                  ) : (
-                    companyInput.trim() !== '' ? (
-                      <li 
-                        className="px-4 py-3 text-sm text-[#00ffcc] cursor-pointer hover:bg-[#00ffcc]/10 border-b border-solid border-gray-800"
-                        onClick={() => addCompany(companyInput)}
-                      >
-                        [ Press Enter to lock "{companyInput}" ]
-                      </li>
+                )}
+                
+                {isCompanyOpen && !formData.company && (
+                  <div className="absolute top-full mt-2 left-0 w-full bg-zinc-800/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.5)] max-h-48 overflow-y-auto z-20 py-1 custom-scrollbar">
+                    {filteredCompanies.length > 0 ? (
+                      filteredCompanies.map((comp, idx) => (
+                        <div key={idx} onClick={() => addCompany(comp)}
+                          className="px-4 py-2.5 text-sm text-zinc-300 hover:bg-blue-600 hover:text-white cursor-pointer transition-colors">
+                          {comp}
+                        </div>
+                      ))
                     ) : (
-                      <li className="px-4 py-3 text-sm text-[#00ffcc]/50 italic border-b border-solid border-gray-800">
-                        [ No companies found ]
-                      </li>
-                    )
-                  )}
-                </ul>
-              )}
-            </div>
-          )}
-
-          <div className="flex flex-col relative">
-            <label className="text-xs md:text-sm text-gray-500 uppercase tracking-widest mb-2 flex justify-between">
-              <span>[ PLATFORM_INTEGRATION ] // Where do you need this? (Select up to 10) *</span>
-            </label>
-
-            {selectedPlatforms.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3 mt-1">
-                {selectedPlatforms.map((plat, idx) => (
-                  <div key={idx} className="flex items-center text-xs bg-black border border-solid border-gray-600 text-[#00ffcc] px-2 py-1">
-                    <span>&gt; {plat}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => removePlatform(plat)}
-                      className="ml-2 text-gray-500 hover:text-red-500 transition-colors focus:outline-none"
-                    >
-                      [x]
-                    </button>
+                      companyInput.trim() !== '' ? (
+                        <div 
+                          className="px-4 py-2.5 text-sm text-blue-400 cursor-pointer hover:bg-blue-500/10 font-medium"
+                          onClick={() => addCompany(companyInput)}
+                        >
+                          Press Enter to add "{companyInput}"
+                        </div>
+                      ) : (
+                        <div className="px-4 py-2.5 text-sm text-zinc-500 italic">
+                          No suggestions found
+                        </div>
+                      )
+                    )}
                   </div>
-                ))}
+                )}
               </div>
             )}
-            
-            <div className="relative w-full mt-1">
-              <input 
-                type="text" 
-                placeholder={selectedPlatforms.length >= 10 ? "[ LIMIT_REACHED ]" : "Type a tool & press Enter..."}
-                value={platformInput}
-                onChange={(e) => {
-                  setPlatformInput(e.target.value);
-                  setIsPlatformOpen(true);
-                  setIsProfessionOpen(false); // Close other menus
-                }}
-                onFocus={() => setIsPlatformOpen(true)}
-                onClick={() => setIsPlatformOpen(true)}
-                onKeyDown={handlePlatformKeyDown}
-                disabled={selectedPlatforms.length >= 10 || isSubmitting}
-                autoComplete="off"
-                className="w-full bg-transparent border-0 border-b border-solid border-gray-600 pb-2 text-base text-white placeholder-gray-600 focus:ring-0 focus:outline-none focus:border-[#00ffcc] transition-colors rounded-none appearance-none pr-8 disabled:opacity-50" 
+
+            {/* Platform Integration Input */}
+            <div className="flex flex-col relative">
+              <label className="text-xs font-medium text-zinc-400 mb-2 ml-1 flex justify-between items-center">
+                <span>Tools you use the most <span className="text-blue-500">*</span></span>
+                <span className="text-zinc-600 font-normal">Max 10</span>
+              </label>
+
+              {selectedPlatforms.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3 mt-1">
+                  {selectedPlatforms.map((plat, idx) => (
+                    <div key={idx} className="flex items-center text-xs bg-zinc-800 border border-white/10 text-zinc-200 rounded-md px-2.5 py-1.5 shadow-sm">
+                      <span className="font-medium">{plat}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => removePlatform(plat)}
+                        className="ml-2 text-zinc-500 hover:text-red-400 transition-colors focus:outline-none bg-white/5 hover:bg-red-400/10 rounded-full p-0.5"
+                      >
+                        <CloseIcon />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="relative w-full">
+                <input 
+                  type="text" 
+                  placeholder={selectedPlatforms.length >= 10 ? "Limit reached" : "e.g. Notion, Slack, Jira..."}
+                  value={platformInput}
+                  onChange={(e) => {
+                    setPlatformInput(e.target.value);
+                    setIsPlatformOpen(true);
+                    setIsProfessionOpen(false);
+                  }}
+                  onFocus={() => setIsPlatformOpen(true)}
+                  onClick={() => setIsPlatformOpen(true)}
+                  onKeyDown={handlePlatformKeyDown}
+                  disabled={selectedPlatforms.length >= 10 || isSubmitting}
+                  autoComplete="off"
+                  className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all duration-200 disabled:opacity-50 pr-10" 
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <ChevronIcon />
+                </div>
+              </div>
+              
+              {isPlatformOpen && selectedPlatforms.length < 10 && (
+                <div className="absolute top-full mt-2 left-0 w-full bg-zinc-800/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.5)] max-h-48 overflow-y-auto z-10 py-1 custom-scrollbar">
+                  {filteredPlatforms.length > 0 ? (
+                    filteredPlatforms.map((plat, idx) => (
+                      <div key={idx} onClick={() => addPlatform(plat)}
+                        className="px-4 py-2.5 text-sm text-zinc-300 hover:bg-blue-600 hover:text-white cursor-pointer transition-colors">
+                        {plat}
+                      </div>
+                    ))
+                  ) : (
+                    platformInput.trim() !== '' ? (
+                      <div 
+                        className="px-4 py-2.5 text-sm text-blue-400 cursor-pointer hover:bg-blue-500/10 font-medium"
+                        onClick={() => addPlatform(platformInput)}
+                      >
+                        Press Enter to add "{platformInput}"
+                      </div>
+                    ) : (
+                      <div className="px-4 py-2.5 text-sm text-zinc-500 italic">
+                        No platforms found
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Turnstile */}
+            <div className="pt-2 flex justify-center w-full overflow-hidden rounded-lg">
+              <Turnstile 
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY} 
+                onSuccess={(token) => setTurnstileToken(token)}
+                onError={() => alert('Cloudflare validation failed.')}
+                options={{ theme: 'dark' }}
               />
-              <span className="absolute right-0 bottom-3 text-gray-500 pointer-events-none text-xs">
-                [ ▼ ]
+            </div>
+
+            {/* Submit Button */}
+            <div className="w-full pt-4">
+              <button type="submit"
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center px-8 py-3.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-500 hover:-translate-y-[1px] shadow-[0_4px_14px_0_rgba(59,130,246,0.39)] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+                {isSubmitting ? 'Processing...' : 'Request Early Access'}
+              </button>
+            </div>
+          </form>
+
+          {/* Connected Users Log (Sleek Glass Version) */}
+          <div className="mt-10 pt-6 border-t border-white/10">
+            <div className="flex items-center justify-between text-xs text-zinc-500 mb-4 font-medium uppercase tracking-wider">
+              <span>Waitlist Queue</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                {submissions.length} Waiting
               </span>
             </div>
             
-            {isPlatformOpen && selectedPlatforms.length < 10 && (
-              <ul className="absolute top-full mt-2 left-0 w-full bg-[#121212] border border-solid border-gray-600 max-h-48 overflow-y-auto z-10 shadow-2xl shadow-black rounded-none scrollbar-thin">
-                {filteredPlatforms.length > 0 ? (
-                  filteredPlatforms.map((plat, idx) => (
-                    <li key={idx} onClick={() => addPlatform(plat)}
-                      className="px-4 py-3 text-sm text-gray-400 hover:bg-gray-900 hover:text-[#00ffcc] cursor-pointer transition-colors border-b border-solid border-gray-800 last:border-0">
-                      + {plat}
-                    </li>
-                  ))
-                ) : (
-                  platformInput.trim() !== '' ? (
-                    <li 
-                      className="px-4 py-3 text-sm text-[#00ffcc] cursor-pointer hover:bg-gray-900 border-b border-solid border-gray-800"
-                      onClick={() => addPlatform(platformInput)}
-                    >
-                      [ Press Enter to add "{platformInput}" ]
-                    </li>
-                  ) : (
-                    <li className="px-4 py-3 text-sm text-gray-600 italic border-b border-solid border-gray-800">
-                      [ No platforms found ]
-                    </li>
-                  )
-                )}
-              </ul>
-            )}
-          </div>
-
-          <div>
-            <Turnstile 
-              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY} 
-              onSuccess={(token) => setTurnstileToken(token)}
-              onError={() => alert('[ SECURITY_ERROR ] Cloudflare validation failed.')}
-            />
-          </div>
-
-          <div className="w-full flex justify-center pt-8">
-            <button type="submit"
-              disabled={isSubmitting}
-              className="inline-flex items-center justify-center px-8 py-3 md:px-10 md:py-4 bg-transparent border border-solid border-gray-600 text-sm md:text-base font-bold uppercase tracking-widest hover:border-[#00ffcc] hover:text-[#00ffcc] hover:shadow-[0_0_15px_rgba(0,255,204,0.15)] transition-all rounded-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-              {isSubmitting ? '[ PROCESSING... ]' : '[ JOIN_THE_WAITLIST ]'}
-            </button>
-          </div>
-        </form>
-
-        <div className="w-full max-w-xl mt-20 border-t border-solid border-gray-800 pt-8 flex flex-col items-start">
-          <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">
-            [ CONNECTION_LOGS: {submissions.length} USERS_WAITING ]
-          </p>
-          <div className="w-full space-y-2 h-40 overflow-y-auto pr-4 scrollbar-thin">
-            {submissions.map((user) => (
-              <div key={user.id} className="flex text-sm md:text-base text-gray-500 hover:text-[#00ffcc] transition-colors">
-                <span className="w-14 text-gray-700">[{String(user.id).padStart(4, '0')}]</span>
-                <span>{user.firstName}</span>
-                <span className="ml-auto text-xs md:text-sm text-gray-600">WAITING</span>
+            <div className="space-y-1 h-32 overflow-y-auto custom-scrollbar pr-2">
+              {submissions.map((user) => (
+                <div key={user.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0 text-sm">
+                  <span className="text-zinc-300 font-medium">{user.firstName}</span>
+                  <span className="text-zinc-600 text-xs font-medium">Joined</span>
+                </div>
+              ))}
+              <div className="flex items-center py-2 text-sm">
+                <span className="text-zinc-500 animate-pulse font-medium">You are next...</span>
               </div>
-            ))}
-            <div className="flex text-sm md:text-base text-[#00ffcc] animate-pulse">
-              <span className="w-14 text-gray-700">[{String(submissions.length + 1).padStart(4, '0')}]</span>
-              <span>_</span>
             </div>
           </div>
-        </div>
-
-      </main>
+          
+        </main>
+      </div>
     </div>
   );
 }
