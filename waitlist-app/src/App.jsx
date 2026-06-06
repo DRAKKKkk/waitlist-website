@@ -60,7 +60,7 @@ export default function App() {
     )
     .slice(0, 50); 
 
-  const [submissions, setSubmissions] = useState([]);
+  // const [submissions, setSubmissions] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -489,7 +489,7 @@ export default function App() {
             </div>
           </form>
 
-          {/* Connected Users Log (Sleek Glass Version) */}
+          {/* Connected Users Log (Sleek Glass Version) 
           <div className="mt-10 pt-6 border-t border-white/10">
             <div className="flex items-center justify-between text-xs text-zinc-500 mb-4 font-medium uppercase tracking-wider">
               <span>Waitlist Queue</span>
@@ -498,6 +498,7 @@ export default function App() {
                 {submissions.length} Waiting
               </span>
             </div>
+          
             
             <div className="space-y-1 h-32 overflow-y-auto custom-scrollbar pr-2">
               {submissions.map((user) => (
@@ -511,6 +512,7 @@ export default function App() {
               </div>
             </div>
           </div>
+          */}
           
         </main>
       </div>
